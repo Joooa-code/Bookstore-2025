@@ -2,6 +2,7 @@
 #define BOOKSTORE_2025_ACCOUNT_H
 #include "Storage.h"
 #include "MemoryRiver.h"
+#include <string>
 struct Account {
     char UserID[31];  // 数字，字母，下划线
     char Password[31];  // 数字，字母，下划线
@@ -26,26 +27,28 @@ private:
 
     // 登录栈
     struct LoginRecord {
-        char UserID[31];
+        std::string UserID;
         int privilege;
-        char selected_ISBN[21];
+        std::string selected_ISBN;
     };
     std::vector<LoginRecord> loginStack;
 
-    bool init_root();
-    bool ID_check(const char* ID) const;
-    bool pwd_check(const char* pwd) const;
-    bool name_check(const char* name) const;
+    void init_root();
+    bool ID_pw_check(const std::string& s) const;
+    static bool name_check(const std::string& name);
     bool priv_check(int priv) const;
 public:
     AccountSystem();
     ~AccountSystem();
 
     // 获取当前登录用户信息
-    char* get_curID() const;
+    std::string get_curID() const;
     int get_curpriv() const;
-    char* get_selected_ISBN() const;
-    void set_selected_ISBN(const char* ISBN);
+    std::string get_selected_ISBN() const;
+    void set_selected_ISBN(const std::string ISBN);
+
+    // 检查该用户是否已存在
+    bool user_exist(const char* UserID);
 
     // 登录：若成功则修改登录栈
     // {0}

@@ -16,12 +16,12 @@ const int MAX_HEAD_RESERVE = 480000; // 为NodeHead预留空间
 
 // 文件头结构 (32字节)
 struct FileHeader {
-    int32_t first_head_offset;    // 第一个NodeHead的偏移量
-    int32_t last_head_offset;     // 最后一个NodeHead的偏移量
-    int32_t free_head_offset;     // 空闲NodeHead链表头
-    int32_t count;                // 使用的NodeHead和NodeBody数量
-    int32_t free_body_offset;     // 空闲NodeBody链表头
-    int32_t padding[3];          // 填充
+    int first_head_offset;    // 第一个NodeHead的偏移量
+    int last_head_offset;     // 最后一个NodeHead的偏移量
+    int free_head_offset;     // 空闲NodeHead链表头
+    int count;                // 使用的NodeHead和NodeBody数量
+    int free_body_offset;     // 空闲NodeBody链表头
+    int padding[3];          // 填充
 };
 
 // 数据条目结构
@@ -34,17 +34,17 @@ struct KeyValue {
 // NodeBody结构
 template<int INDEX_LEN, typename TypeName>
 struct NodeBody {
-    int32_t next_free;            // 空闲链表指针
+    int next_free;            // 空闲链表指针
     KeyValue<INDEX_LEN, TypeName> pairs[BLOCK_SIZE];       // 数据条目数组
 };
 
 // NodeHead结构
 template<int INDEX_LEN>
 struct NodeHead {
-    int32_t prev_offset;          // 前一个NodeHead的偏移量
-    int32_t next_offset;          // 下一个NodeHead的偏移量
-    int32_t body_offset;          // 对应NodeBody在文件中的偏移量
-    int32_t pair_count;           // 当前块中存储的数据数量
+    int prev_offset;          // 前一个NodeHead的偏移量
+    int next_offset;          // 下一个NodeHead的偏移量
+    int body_offset;          // 对应NodeBody在文件中的偏移量
+    int pair_count;           // 当前块中存储的数据数量
     char min_index[INDEX_LEN];    // 当前块中最小index
     char max_index[INDEX_LEN];    // 当前块中最大index
 };
@@ -56,11 +56,11 @@ private:
     string filename;              // 文件名
 
     FileHeader file_header;       // 文件头缓存
-    int32_t header_size;          // 文件头大小
-    int32_t head_size;            // NodeHead大小
-    int32_t body_size;            // NodeBody大小
-    int32_t head_start;           // NodeHead区域起始偏移
-    int32_t data_start;           // 数据区域起始偏移
+    int header_size;          // 文件头大小
+    int head_size;            // NodeHead大小
+    int body_size;            // NodeBody大小
+    int head_start;           // NodeHead区域起始偏移
+    int data_start;           // 数据区域起始偏移
 
     // 读取文件头
     void read_file_header() {
@@ -76,14 +76,14 @@ private:
     }
 
     // 读取NodeHead
-    void read_head(NodeHead<INDEX_LEN>& head, int32_t offset) {
+    void read_head(NodeHead<INDEX_LEN>& head, int offset) {
         if (offset < 0) return;
         data_file.seekg(offset);
         data_file.read(reinterpret_cast<char*>(&head), sizeof(NodeHead<INDEX_LEN>));
     }
 
     // 写入NodeHead
-    void write_head(const NodeHead<INDEX_LEN>& head, int32_t offset) {
+    void write_head(const NodeHead<INDEX_LEN>& head, int offset) {
         if (offset < 0) return;
         data_file.seekp(offset);
         data_file.write(reinterpret_cast<const char*>(&head), sizeof(NodeHead<INDEX_LEN>));
@@ -91,14 +91,14 @@ private:
     }
 
     // 读取NodeBody
-    void read_body(NodeBody<INDEX_LEN, TypeName>& body, int32_t offset) {
+    void read_body(NodeBody<INDEX_LEN, TypeName>& body, int offset) {
         if (offset < 0) return;
         data_file.seekg(offset);
         data_file.read(reinterpret_cast<char*>(&body), sizeof(NodeBody<INDEX_LEN, TypeName>));
     }
 
     // 写入NodeBody
-    void write_body(const NodeBody<INDEX_LEN, TypeName>& body, int32_t offset) {
+    void write_body(const NodeBody<INDEX_LEN, TypeName>& body, int offset) {
         if (offset < 0) return;
         data_file.seekp(offset);
         data_file.write(reinterpret_cast<const char*>(&body), sizeof(NodeBody<INDEX_LEN, TypeName>));
@@ -106,8 +106,8 @@ private:
     }
 
     // 在预留区域分配NodeHead
-    int32_t allocate_head() {
-        int32_t offset;
+    int allocate_head() {
+        int offset;
 
         if (file_header.free_head_offset != -1) {
             // 从空闲链表分配
@@ -127,8 +127,8 @@ private:
     }
 
     // 分配NodeBody
-    int32_t allocate_body() {
-        int32_t offset;
+    int allocate_body() {
+        int offset;
 
         if (file_header.free_body_offset != -1) {
             // 从空闲链表分配
@@ -146,7 +146,7 @@ private:
     }
 
     // 释放NodeHead到空闲链表
-    void free_head(int32_t offset) {
+    void free_head(int offset) {
         NodeHead<INDEX_LEN> freed_head;
         memset(&freed_head, 0, sizeof(NodeHead<INDEX_LEN>));
         freed_head.next_offset = file_header.free_head_offset;
@@ -156,7 +156,7 @@ private:
     }
 
     // 释放NodeBody到空闲链表
-    void free_body(int32_t offset) {
+    void free_body(int offset) {
         NodeBody<INDEX_LEN, TypeName> freed_body;
         memset(&freed_body, 0, sizeof(NodeBody<INDEX_LEN, TypeName>));
         freed_body.next_free = file_header.free_body_offset;
@@ -166,13 +166,13 @@ private:
     }
 
     // 查找合适的插入块
-    int32_t find_suitable_block(const char* index) {
+    int find_suitable_block(const char* index) {
     if (file_header.first_head_offset == -1) {
         return -1;
     }
 
-    int32_t current_offset = file_header.first_head_offset;
-    int32_t prev_offset = -1;
+    int current_offset = file_header.first_head_offset;
+    int prev_offset = -1;
 
     while (current_offset != -1) {
         NodeHead<INDEX_LEN> current_head;
@@ -231,12 +231,12 @@ private:
 }
 
     // 创建新块
-    int32_t create_new_block(int32_t insert_after) {
+    int create_new_block(int insert_after) {
         // 分配NodeHead
-        int32_t new_head_offset = allocate_head();
+        int new_head_offset = allocate_head();
 
         // 分配NodeBody
-        int32_t new_body_offset = allocate_body();
+        int new_body_offset = allocate_body();
 
         // 创建新的NodeHead
         NodeHead<INDEX_LEN> new_head;
@@ -299,7 +299,7 @@ private:
     }
 
      // 在块中插入条目
-    bool insert_to_block(int32_t head_offset, const char* index, TypeName value) {
+    bool insert_to_block(int head_offset, const char* index, TypeName value) {
         NodeHead<INDEX_LEN> head;
         read_head(head, head_offset);
 
@@ -378,8 +378,8 @@ private:
     }
 
     // 查找包含特定index的第一个块
-    int32_t find_first_block_by_index(const char* index) {
-        int32_t current_offset = file_header.first_head_offset;
+    int find_first_block_by_index(const char* index) {
+        int current_offset = file_header.first_head_offset;
 
         while (current_offset != -1) {
             NodeHead<INDEX_LEN> current_head;
@@ -402,7 +402,7 @@ private:
     }
 
      // 分裂块
-    void split_block(int32_t head_offset) {
+    void split_block(int head_offset) {
         NodeHead<INDEX_LEN> old_head;
         read_head(old_head, head_offset);
 
@@ -410,7 +410,7 @@ private:
         read_body(old_body, old_head.body_offset);
 
         // 创建新块
-        int32_t new_head_offset = create_new_block(head_offset);
+        int new_head_offset = create_new_block(head_offset);
         if (new_head_offset == -1) return;
 
         NodeHead<INDEX_LEN> new_head;
@@ -479,7 +479,7 @@ private:
     }
 
     // 合并两个块
-    void merge_blocks(NodeHead<INDEX_LEN>& left_head, NodeHead<INDEX_LEN>& right_head, int32_t left_offset, int32_t right_offset) {
+    void merge_blocks(NodeHead<INDEX_LEN>& left_head, NodeHead<INDEX_LEN>& right_head, int left_offset, int right_offset) {
         NodeBody<INDEX_LEN, TypeName> left_body, right_body;
         read_body(left_body, left_head.body_offset);
         read_body(right_body, right_head.body_offset);
@@ -517,7 +517,7 @@ private:
     }
 
     // 尝试合并块
-    void try_merge_blocks(int32_t head_offset) {
+    void try_merge_blocks(int head_offset) {
         NodeHead<INDEX_LEN> head;
         read_head(head, head_offset);
 
@@ -546,7 +546,7 @@ private:
     }
 
     // 在块中删除条目
-    bool delete_from_block(int32_t head_offset, const char* index, TypeName value) {
+    bool delete_from_block(int head_offset, const char* index, TypeName value) {
         NodeHead<INDEX_LEN> head;
         read_head(head, head_offset);
 
@@ -627,7 +627,8 @@ private:
     }
 
 public:
-    BlockList(const string& filename) {
+    BlockList() = default;
+    explicit BlockList(const string& filename) {
         header_size = sizeof(FileHeader);
         head_size = sizeof(NodeHead<INDEX_LEN>);
         body_size = sizeof(int32_t) + BLOCK_SIZE * sizeof(KeyValue<INDEX_LEN, TypeName>);
@@ -664,7 +665,7 @@ public:
     // 插入操作
     void insert(const char* index, TypeName value) {
         // 查找合适的块
-        int32_t target_offset = find_suitable_block(index);
+        int target_offset = find_suitable_block(index);
 
         // 处理数据库为空的情况
         if (target_offset == -1) {
@@ -699,7 +700,7 @@ public:
 
     // 删除操作
     void remove(const char* index, TypeName value) {
-        int32_t current_offset = find_first_block_by_index(index);
+        int current_offset = find_first_block_by_index(index);
 
         while (current_offset != -1) {
             NodeHead<INDEX_LEN> current_head;
@@ -731,7 +732,7 @@ public:
     vector<TypeName> find(const char* index) {
         vector<TypeName> result;
         // 查找第一个可能包含该index的块
-        int32_t current_offset = find_first_block_by_index(index);
+        int current_offset = find_first_block_by_index(index);
 
         while (current_offset != -1) {
             NodeHead<INDEX_LEN> current_head;
