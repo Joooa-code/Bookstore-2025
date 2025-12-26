@@ -764,5 +764,34 @@ public:
         sort(result.begin(), result.end());
         return result;
     }
+
+    // 新增：获取全部元素
+    std::vector<TypeName> get_all() {
+        std::vector<TypeName> result;
+
+        // 从头节点开始遍历
+        int current_offset = file_header.first_head_offset;
+
+        while (current_offset != -1) {
+            NodeHead<INDEX_LEN> current_head;
+            read_head(current_head, current_offset);
+
+            if (current_head.pair_count > 0) {
+                NodeBody<INDEX_LEN, TypeName> current_body;
+                read_body(current_body, current_head.body_offset);
+
+                // 将当前块中的所有元素添加到结果中
+                for (int i = 0; i < current_head.pair_count; i++) {
+                    result.push_back(current_body.pairs[i].value);
+                }
+            }
+
+            // 移动到下一个块
+            current_offset = current_head.next_offset;
+        }
+
+        // 按索引排序
+        return result;
+    }
 };
 #endif //BOOKSTORE_2025_STORAGE_H
