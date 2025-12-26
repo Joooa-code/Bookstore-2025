@@ -50,6 +50,9 @@ public:
     // 检查该用户是否已存在
     bool user_exist(const char* UserID);
 
+    // 获取用户信息
+    bool get_user_info(const std::string& UserID, Account& account);
+
     // 登录：若成功则修改登录栈
     // {0}
     void su(const string& UserID, const string& Password = "");
