@@ -8,7 +8,7 @@ struct Book {
     char ISBN[21];  // 除不可见字符以外 ASCII 字符
     char BookName[61];  // 除不可见字符和英文双引号以外 ASCII 字符
     char Author[61];  // 除不可见字符和英文双引号以外 ASCII 字符
-    char Keyword[61];  // 内容以 | 为分隔可以出现多段信息，每段信息长度至少为 1
+    char Keyword[61];  // 内容以 | 为分隔可以出现多段信息，每段信息长度至少为 1，除不可见字符和英文双引号以外 ASCII 字符
     int Stock;  // 库存
     double Price;  // 图书单价
     double TotalCost;  // 交易总额
@@ -37,6 +37,9 @@ private:
         bool operator <(const BookIndex& other) const {
             return strcmp(ISBN, other.ISBN) < 0;
         }
+        bool operator >(const BookIndex& other) const {
+            return strcmp(ISBN, other.ISBN) > 0;
+        }
     };
 
     BlockList<21, BookIndex> ISBNIndex;  // ISBN索引
@@ -52,6 +55,11 @@ private:
 public:
     BookSystem(AccountSystem* as, LogSystem* ls);
     ~BookSystem();
+
+    static bool ISBN_check(const std::string& s);
+    static bool other_check(const std::string& s);
+    static bool keywords_repetition(const std::vector<std::string>& keywords);
+
 
     // 无附加参数时，输出所有图书
     // 附加参数内容为空则操作失败
