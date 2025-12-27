@@ -1,7 +1,5 @@
 #ifndef BOOKSTORE_2025_MEMORYRIVER_H
 #define BOOKSTORE_2025_MEMORYRIVER_H
-#ifndef BPT_MEMORYRIVER_HPP
-#define BPT_MEMORYRIVER_HPP
 
 #include <fstream>
 
@@ -24,14 +22,14 @@ public:
     void initialise(string FN = "") {
         if (FN != "") file_name = FN;
         file.open(file_name, std::ios::out | fstream::binary);  // 创建文件并向文件中写入
-        int tmp = 0;
+        double tmp = 0.0;
         for (int i = 0; i < info_len; ++i)
-            file.write(reinterpret_cast<char *>(&tmp), sizeof(int));
+            file.write(reinterpret_cast<char *>(&tmp), sizeof(double));
         file.close();
     }
 
-    //读出第n个int的值赋给tmp，1_base
-    void get_info(int &tmp, int n) {
+    //读出第n个double的值赋给tmp，1_base
+    void get_info(double &tmp, int n) {
         if (n > info_len) return;
         /* your code here */
         if (n < 1) return;
@@ -41,18 +39,18 @@ public:
             return;
         }
 
-        // 将指针定位到第n个int的位置
-        file.seekg((n - 1) * sizeof(int));
+        // 将指针定位到第n个double的位置
+        file.seekg((n - 1) * sizeof(double));
 
         // 读取
-        file.read(reinterpret_cast<char *>(&tmp), sizeof(int));
+        file.read(reinterpret_cast<char *>(&tmp), sizeof(double));
 
         // 关闭
         file.close();
     }
 
-    //将tmp写入第n个int的位置，1_base
-    void write_info(int tmp, int n) {
+    //将tmp写入第n个double的位置，1_base
+    void write_info(double tmp, int n) {
         if (n > info_len) return;
         /* your code here */
         if (n < 1) return;
@@ -62,11 +60,11 @@ public:
             return;
         }
 
-        // 将指针定位到第n个int的位置
-        file.seekp((n - 1) * sizeof(int));
+        // 将指针定位到第n个double的位置
+        file.seekp((n - 1) * sizeof(double));
 
         // 写入
-        file.write(reinterpret_cast<char *>(&tmp), sizeof(int));
+        file.write(reinterpret_cast<char *>(&tmp), sizeof(double));
 
         // 关闭
         file.close();
@@ -94,7 +92,7 @@ public:
     //用t的值更新位置索引index对应的对象，保证调用的index都是由write函数产生
     void update(T &t, const int index) {
         /* your code here */
-        if (index < info_len * sizeof(int)) return;
+        if (index < info_len * sizeof(double)) return;  // 改为sizeof(double)
 
         file.open(file_name, fstream::in | fstream::out | fstream::binary);
 
@@ -111,7 +109,7 @@ public:
     //读出位置索引index对应的T对象的值并赋值给t，保证调用的index都是由write函数产生
     void read(T &t, const int index) {
         /* your code here */
-        if (index < info_len * sizeof(int)) return;
+        if (index < info_len * sizeof(double)) return;  // 改为sizeof(double)
         file.open(file_name, fstream::in | fstream::binary);
 
         file.seekg(index);
@@ -135,5 +133,4 @@ public:
 };
 
 
-#endif //BPT_MEMORYRIVER_HPP
 #endif //BOOKSTORE_2025_MEMORYRIVER_H
