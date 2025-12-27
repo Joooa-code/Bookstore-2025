@@ -42,6 +42,14 @@ static bool name_check(const std::string& name) {
     return true;
 }
 
+bool AccountSystem::priv_check(int priv) {
+    int cur = get_curpriv();
+    if (cur < priv) {
+        return false;
+    }
+    else return true;
+}
+
 // 获取当前用户，若登录栈为空输出Invalid并返回""
 std::string AccountSystem::get_curID() const {
     if (loginStack.empty()) {
