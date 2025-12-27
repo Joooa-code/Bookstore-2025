@@ -1,37 +1,52 @@
 #ifndef BOOKSTORE_2025_LOG_H
 #define BOOKSTORE_2025_LOG_H
-#include "Storage.h"
+#include "MemoryRiver.h"
 #include "Account.h"
+#include <string>
 
 // 财务日志
 struct FinanceLog {
     double amount;         // 金额（正为收入，负为支出）
-    long long index;       // 第几笔交易
+    int index;       // 第几笔交易（从1开始）
+
+    FinanceLog() : amount(0), index(0) {}
+    FinanceLog(double amt, long long idx) : amount(amt), index(idx) {}
 };
 
-// 员工日志
-struct EmployeeLog {
-    char UserID[31];       // 员工ID
-    char operation[150];    // 日志内容
-};
-
+// 操作日志
 struct OperationLog {
-    char UserID[31];
-    char operation[150];
-    long long index;    // 操作序号（第几次操作）
+    char UserID[31];       // 用户ID
+    char operation[151];    // 操作内容（150字符 + '\0'）
+    int index;       // 操作序号
+
+    OperationLog() : index(0) {
+        std::memset(UserID, 0, sizeof(UserID));
+        std::memset(operation, 0, sizeof(operation));
+    }
+
+    OperationLog(const std::string& uid, const std::string& op, int idx)
+        : index(idx) {
+        std::strncpy(UserID, uid.c_str(), 30);
+        UserID[30] = '\0';
+        std::strncpy(operation, op.c_str(), 150);
+        operation[150] = '\0';
+    }
 };
 
 class LogSystem {
 private:
-    BlockList<FinanceLog> finance_logs;    // 财务日志存储
-    BlockList<EmployeeLog> employee_logs;  // 员工日志存储
-    BlockList<OperationLog> operation_logs; // 操作日志存储
-    double total_income;
-    double total_expense;
-    long long finance_count;
+    MemoryRiver<FinanceLog, 3> financeStorage;    // 财务日志存储
+    MemoryRiver<OperationLog> operationStorage; // 操作日志存储
+    AccountSystem* accountSystem;
+
+    // 统计数据
+    int finance_count;      // 财务记录总数
+    int operation_count;    // 操作记录总数
+    double total_income;          // 总收入
+    double total_expense;         // 总支出
 
 public:
-    LogSystem();
+    LogSystem(AccountSystem* a);
     ~LogSystem();
 
     // 记录交易（++finance_count）
