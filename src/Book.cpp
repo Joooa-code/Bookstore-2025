@@ -244,6 +244,7 @@ void BookSystem::buy(const string& ISBN, int Quantity) {
 
     // 输出总金额
     std::cout << std::fixed << std::setprecision(2) << total_price << "\n";
+    logSystem->recordFinance(total_price);
 }
 
 // 以当前帐户选中指定图书
@@ -530,4 +531,5 @@ void BookSystem::import(int Quantity, double TotalCost) {
 
     // 更新图书信息
     bookStorage.update(book, pos);
+    logSystem->recordFinance(-TotalCost);
 }

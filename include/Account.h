@@ -36,7 +36,6 @@ private:
     void init_root();
     bool ID_pw_check(const std::string& s) const;
     static bool name_check(const std::string& name);
-    bool priv_check(int priv) const;
 public:
     AccountSystem();
     ~AccountSystem();

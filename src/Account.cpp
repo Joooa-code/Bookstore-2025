@@ -42,10 +42,6 @@ static bool name_check(const std::string& name) {
     return true;
 }
 
-bool AccountSystem::priv_check(int priv) const {
-    return priv == 1 || priv == 3 || priv == 7;
-}
-
 // 获取当前用户，若登录栈为空输出Invalid并返回""
 std::string AccountSystem::get_curID() const {
     if (loginStack.empty()) {
@@ -94,7 +90,7 @@ bool AccountSystem::get_user_info(const std::string& UserID, Account& account) {
 
 AccountSystem::AccountSystem() {
     BlockList<31, int> accountIndex("account_index.dat");
-    MemoryRiver<Account> accountStorage("account_data.dat");
+    accountStorage.initialise("account_data.dat");
 
     // 检查是否需要初始化根用户
     if (!user_exist("root")) {

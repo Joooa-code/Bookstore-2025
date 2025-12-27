@@ -568,11 +568,10 @@ private:
             }
             else {
                 // 索引相同，查找值
-                int value_cmp = body.pairs[mid].value - value;
-                if (value_cmp < 0) {
+                if (body.pairs[mid].value < value) {
                     left = mid + 1;
                 }
-                else if (value_cmp > 0) {
+                else if (body.pairs[mid].value > value) {
                     right = mid - 1;
                 }
                 else {
