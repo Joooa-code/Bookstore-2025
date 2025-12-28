@@ -36,16 +36,16 @@ private:
     void init_root();
     bool ID_pw_check(const std::string& s) const;
     static bool name_check(const std::string& name);
-    bool priv_check(int priv);
+    bool priv_check(int priv) const;
 public:
     AccountSystem();
     ~AccountSystem();
 
     // 获取当前登录用户信息
-    std::string get_curID() const;
+
     int get_curpriv() const;
     std::string get_selected_ISBN() const;
-    void set_selected_ISBN(const std::string ISBN);
+    void set_selected_ISBN(const std::string& ISBN);
 
     // 检查该用户是否已存在
     bool user_exist(const char* UserID);

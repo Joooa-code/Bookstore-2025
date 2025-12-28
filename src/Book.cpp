@@ -7,13 +7,13 @@
 #include <iomanip>
 
 BookSystem::BookSystem(AccountSystem* as, LogSystem* ls)
-    : accountSystem(as), logSystem(ls), selected(false) {
+    : accountSystem(as), logSystem(ls), selected(false),
+      ISBNIndex("ISBN_index.dat"),
+      nameIndex("name_index.dat"),
+      authorIndex("author_index.dat"),
+      keywordIndex("keyword_index.dat") {
     std::memset(selected_ISBN, 0, sizeof(selected_ISBN));
     bookStorage.initialise("book_data.dat");
-    BlockList<21, BookIndex> ISBNIndex("ISBN_index.dat");
-    BlockList<61, BookIndex> nameIndex("name_index.dat");
-    BlockList<61, BookIndex> authorIndex("author_index.dat");
-    BlockList<61, BookIndex> keywordIndex("keyword_index.dat");
 }
 
 BookSystem::~BookSystem() = default;
@@ -313,6 +313,7 @@ void BookSystem::modify(const std::string& line) {
 
     std::string new_ISBN, new_name, new_author, new_keywords;
     bool have_ISBN = false, have_name = false, have_author = false, have_keyword = false;
+    double new_price = book.Price;
 
     size_t start = 0;
     while (start < line.length()) {
@@ -360,17 +361,31 @@ void BookSystem::modify(const std::string& line) {
         }
         else if (p.substr(0, 7) == "-price=") {
             std::string price_str = p.substr(7);
-            try {
-                double price = std::stod(price_str);
-                if (price < 0) {
-                    std::cout << "Invalid\n";
-                    return;
+            if (price_str.length() > 13) {
+                cout << "Invalid\n";
+                return;  // 长度不能超过13
+            }
+            bool valid = true;
+            bool dot_found = false;
+            for (char c : price_str) {
+                if (c == '.') {
+                    if (dot_found) {
+                        valid = false;
+                        break;
+                    }
+                    dot_found = true;
                 }
-                book.Price = price;  // 直接修改价格
-            } catch (...) {
-                std::cout << "Invalid\n";
+                else if (!isdigit(c)) {
+                    valid = false;
+                    break;
+                }
+            }
+            if (!valid || price_str.empty()) {
+                cout << "Invalid\n";
                 return;
             }
+            double price = stod(price_str);
+            book.Price = price;
         }
         else {
             std::cout << "Invalid\n";  // 没有对应参数

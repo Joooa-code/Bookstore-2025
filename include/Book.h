@@ -66,10 +66,6 @@ public:
     // {1}
     void show();
 
-    // 按ISBN查询
-    // 输出图书信息或空行（无满足条件的图书）
-    void show(const string& ISBN);
-
     // 输出图书信息或空行（无满足条件的图书），[Keyword] 中出现多个关键词则操作失败
     // some:name, author...
     void show(const string& some, const string& value);

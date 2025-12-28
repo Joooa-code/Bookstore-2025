@@ -42,21 +42,12 @@ static bool name_check(const std::string& name) {
     return true;
 }
 
-bool AccountSystem::priv_check(int priv) {
+bool AccountSystem::priv_check(int priv) const {
     int cur = get_curpriv();
     if (cur < priv) {
         return false;
     }
     else return true;
-}
-
-// 获取当前用户，若登录栈为空输出Invalid并返回""
-std::string AccountSystem::get_curID() const {
-    if (loginStack.empty()) {
-        std::cout << "Invalid\n";
-        return "";
-    }
-    return loginStack.back().UserID;
 }
 
 int AccountSystem::get_curpriv() const {
@@ -71,7 +62,7 @@ std::string AccountSystem::get_selected_ISBN() const {
 }
 
 // 为当前用户设置选中图书
-void AccountSystem::set_selected_ISBN(const std::string isbn) {
+void AccountSystem::set_selected_ISBN(const std::string& isbn) {
     if (!loginStack.empty()) {
         loginStack.back().selected_ISBN = isbn;
     }
@@ -96,8 +87,8 @@ bool AccountSystem::get_user_info(const std::string& UserID, Account& account) {
     return true;
 }
 
-AccountSystem::AccountSystem() {
-    BlockList<31, int> accountIndex("account_index.dat");
+AccountSystem::AccountSystem()
+    : accountIndex("account_index.dat") {
     accountStorage.initialise("account_data.dat");
 
     // 检查是否需要初始化根用户
