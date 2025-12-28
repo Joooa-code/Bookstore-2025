@@ -29,7 +29,7 @@ bool AccountSystem::ID_pw_check(const std::string& s) const {
     return true;
 }
 
-static bool name_check(const std::string& name) {
+bool AccountSystem::name_check(const std::string& name) {
     // 长度检查
     if (name.empty() || name.length() > 30) return false;
 

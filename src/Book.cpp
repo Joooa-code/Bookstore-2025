@@ -19,7 +19,7 @@ BookSystem::BookSystem(AccountSystem* as, LogSystem* ls)
 BookSystem::~BookSystem() = default;
 
 // 检查ISBN
-static bool ISBN_check(const std::string& s) {
+bool BookSystem::ISBN_check(const std::string& s) {
     if (s.empty() || s.length() > 20) return false;  // 最大长度20
     for (char c : s) {
         if (c < 32 || c > 126) { // 不可见字符ASCII码小于32
@@ -30,7 +30,7 @@ static bool ISBN_check(const std::string& s) {
 }
 
 // 检查
-static bool other_check(const std::string& s) {
+bool BookSystem::other_check(const std::string& s) {
     if (s.empty() || s.length() > 60) return false;  // 最大长度60
     for (char c : s) {
         if (c < 32 || c > 126 || c == '\"') {
@@ -64,7 +64,7 @@ static std::vector<std::string> split_keywords(const std::string& keyword_str) {
 }
 
 // 检查关键词是否重复
-static bool keywords_repetition(const std::vector<std::string>& keywords) {
+bool BookSystem::keywords_repetition(const std::vector<std::string>& keywords) {
     std::vector<std::string> sorted_keywords = keywords;
     std::sort(sorted_keywords.begin(), sorted_keywords.end());
 
