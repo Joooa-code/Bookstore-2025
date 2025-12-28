@@ -1,14 +1,13 @@
 cmake_minimum_required(VERSION 3.10)
 project(Bookstore-2025)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 14)
 
-# 设置可执行文件名
-set(EXECUTABLE_OUTPUT_NAME code)
+include_directories(include)
+include_directories(src)
 
 # 添加可执行文件
-add_executable(${EXECUTABLE_OUTPUT_NAME}
+add_executable(code
         src/Book.cpp
         src/main.cpp
         include/Account.h
@@ -20,6 +19,3 @@ add_executable(${EXECUTABLE_OUTPUT_NAME}
         src/Account.cpp
         include/MemoryRiver.h
 )
-
-# 包含目录
-target_include_directories(${EXECUTABLE_OUTPUT_NAME} PRIVATE include)
