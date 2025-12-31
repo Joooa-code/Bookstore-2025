@@ -71,23 +71,180 @@
     };
 ```
 ### BlockList类
+```cpp
+struct FileHeader {
+    int first_head_offset;    // 第一个NodeHead的偏移量
+    int last_head_offset;     // 最后一个NodeHead的偏移量
+    int free_head_offset;     // 空闲NodeHead链表头
+    int count;                // 使用的NodeHead和NodeBody数量
+    int free_body_offset;     // 空闲NodeBody链表头
+    int padding[3];          // 填充
+};
+
+// 数据条目结构
+template<int INDEX_LEN, typename TypeName>
+struct KeyValue {
+    char index[INDEX_LEN];        // 索引字符串
+    TypeName value;                // 值
+};
+
+// NodeBody结构
+template<int INDEX_LEN, typename TypeName>
+struct NodeBody {
+    int next_free;            // 空闲链表指针
+    KeyValue<INDEX_LEN, TypeName> pairs[BLOCK_SIZE];       // 数据条目数组
+};
+
+// NodeHead结构
+template<int INDEX_LEN>
+struct NodeHead {
+    int prev_offset;          // 前一个NodeHead的偏移量
+    int next_offset;          // 下一个NodeHead的偏移量
+    int body_offset;          // 对应NodeBody在文件中的偏移量
+    int pair_count;           // 当前块中存储的数据数量
+    char min_index[INDEX_LEN];    // 当前块中最小index
+    char max_index[INDEX_LEN];    // 当前块中最大index
+};
+
+template<int INDEX_LEN, typename TypeName>
+class BlockList {
+private:
+    fstream data_file;            // 数据文件
+    string filename;              // 文件名
+
+    FileHeader file_header;       // 文件头缓存
+    int header_size;          // 文件头大小
+    int head_size;            // NodeHead大小
+    int body_size;            // NodeBody大小
+    int head_start;           // NodeHead区域起始偏移
+    int data_start;           // 数据区域起始偏移
+
+    // 读取文件头
+    void read_file_header() {}
+
+    // 写入文件头
+    void write_file_header() {}
+
+    // 读取NodeHead
+    void read_head(NodeHead<INDEX_LEN>& head, int offset) {}
+
+    // 写入NodeHead
+    void write_head(const NodeHead<INDEX_LEN>& head, int offset) {}
+
+    // 读取NodeBody
+    void read_body(NodeBody<INDEX_LEN, TypeName>& body, int offset) {}
+
+    // 写入NodeBody
+    void write_body(const NodeBody<INDEX_LEN, TypeName>& body, int offset) {}
+
+    // 在预留区域分配NodeHead
+    int allocate_head() {}
+
+    // 分配NodeBody
+    int allocate_body() {}
+
+    // 释放NodeHead到空闲链表
+    void free_head(int offset) {}
+
+    // 释放NodeBody到空闲链表
+    void free_body(int offset) {}
+
+    // 查找合适的插入块
+    int find_suitable_block(const char* index) {}
+
+    // 创建新块
+    int create_new_block(int insert_after) {}
+
+     // 在块中插入条目
+    bool insert_to_block(int head_offset, const char* index, TypeName value) {}
+
+    // 查找包含特定index的第一个块
+    int find_first_block_by_index(const char* index) {}
+
+     // 分裂块
+    void split_block(int head_offset) {}
+
+    // 合并两个块
+    void merge_blocks(NodeHead<INDEX_LEN>& left_head, NodeHead<INDEX_LEN>& right_head, int left_offset, int right_offset) {}
+
+    // 尝试合并块
+    void try_merge_blocks(int head_offset) {}
+
+    // 在块中删除条目
+    bool delete_from_block(int head_offset, const char* index, TypeName value) {}
+
+    // 初始化新文件
+    void init_new_file() {}
+
+public:
+    BlockList() = default;
+    explicit BlockList(const string& filename) {}
+
+    ~BlockList() {}
+
+    // 插入操作
+    void insert(const char* index, TypeName value) {}
+
+    // 删除操作
+    void remove(const char* index, TypeName value) {}
+
+    // 查找操作
+    vector<TypeName> find(const char* index) {}
+
+    // 新增：获取全部元素
+    std::vector<TypeName> get_all() {}
+};
+```
 ### Account模块
 ```cpp
 struct Account {
-    char UserID[31];
-    char Password[31];
-    char Username[31];
+    char UserID[31];  // 数字，字母，下划线
+    char Password[31];  // 数字，字母，下划线
+    char Username[31];  // 除不可见字符以外 ASCII 字符
     int Privilege;
-}; 
+
+    Account(): Privilege(0) {
+        std::memset(UserID, 0, sizeof(UserID));
+        std::memset(Password, 0, sizeof(Password));
+        std::memset(Username, 0, sizeof(Username));
+    }
+
+    bool operator<(const Account& other) const {
+        return strcmp(UserID, other.UserID) < 0;
+    }
+};
 
 class AccountSystem{
 private:
-    BlockList<Account> accountStorage; // 用户信息存储
-    std::vector<Account> loginStack; // 登录栈
-    std::map<string, string> selectedBooks; // 选中图书栈（ID ISBN）
+    BlockList<31, int> accountIndex; // 用户信息存储:UserID->accountStorage里的位置
+    MemoryRiver<Account> accountStorage;  // 账户数据存储
+
+    // 登录栈
+    struct LoginRecord {
+        std::string UserID;
+        int privilege;
+        std::string selected_ISBN;
+    };
+    std::vector<LoginRecord> loginStack;
+
+    bool ID_pw_check(const std::string& s) const;
+    static bool name_check(const std::string& name);
+    bool priv_check(int priv) const;
 public:
-    AccountSystem(); 
-    ~AccountSystem(); 
+    AccountSystem();
+    ~AccountSystem();
+
+    // 获取当前登录用户信息
+
+    int get_curpriv() const;
+    std::string get_selected_ISBN() const;
+    void set_selected_ISBN(const std::string& ISBN);
+
+    // 检查该用户是否已存在
+    bool user_exist(const char* UserID);
+
+    // 获取用户信息
+    bool get_user_info(const std::string& UserID, Account& account);
 
     // 登录：若成功则修改登录栈
     // {0}
@@ -101,7 +258,7 @@ public:
     // 注册权限等级为 {1} 的新账户
     // 若userID与已注册用户重复则失败
     // {0}
-    void register(const string& UserID, const string& Password, const string& Username);
+    void regis(const string& UserID, const string& Password, const string& Username);
 
     // 修改指定帐户的密码
     // 如果该帐户不存在则操作失败；如果密码错误则操作失败
@@ -126,32 +283,64 @@ struct Book {
     char ISBN[21];  // 除不可见字符以外 ASCII 字符
     char BookName[61];  // 除不可见字符和英文双引号以外 ASCII 字符
     char Author[61];  // 除不可见字符和英文双引号以外 ASCII 字符
-    char Keyword[61];  // 内容以 | 为分隔可以出现多段信息，每段信息长度至少为 1
-    int Quantity;  
+    char Keyword[61];  // 内容以 | 为分隔可以出现多段信息，每段信息长度至少为 1，除不可见字符和英文双引号以外 ASCII 字符
+    int Stock;  // 库存
     double Price;  // 图书单价
     double TotalCost;  // 交易总额
+
+    Book(): Stock(0), Price(0), TotalCost(0) {
+        std::memset(ISBN, 0, sizeof(ISBN));
+        std::memset(BookName, 0, sizeof(BookName));
+        std::memset(Author, 0, sizeof(Author));
+        std::memset(Keyword, 0, sizeof(Keyword));
+    }
+
+    // 任何两本图书不应该有相同的ISBN信息
+    bool operator==(const Book& other) const {
+        return std::strcmp(ISBN, other.ISBN) == 0;
+    }
 };
 
 class BookSystem {
 private:
-    BlockList<Book> bookStorage; // 图书信息存储
+    MemoryRiver<Book> bookStorage; // 图书信息完整存储(使用MemoryRiver)
+
+    struct BookIndex {
+        char ISBN[21];  //ISBN
+        int storage_pos;  // position in MemoryRiver
+
+        bool operator <(const BookIndex& other) const {
+            return strcmp(ISBN, other.ISBN) < 0;
+        }
+        bool operator >(const BookIndex& other) const {
+            return strcmp(ISBN, other.ISBN) > 0;
+        }
+    };
+
+    BlockList<21, BookIndex> ISBNIndex;  // ISBN索引
+    BlockList<61, BookIndex> nameIndex;  // 书名索引
+    BlockList<61, BookIndex> authorIndex;  // 作者名索引
+    BlockList<61, BookIndex> keywordIndex;  // 关键词索引
 
     AccountSystem* accountSystem;
-    FinanceSystem* financeSystem;
+    LogSystem* logSystem;
 
+    bool selected;  // 当前是否选中图书
+    char selected_ISBN[21];  // 当前选中图书的ISBN
 public:
-    BookSystem(AccountSystem* as, FinanceSystem* fs); 
-    ~BookSystem(); 
+    BookSystem(AccountSystem* as, LogSystem* ls);
+    ~BookSystem();
+
+    static bool ISBN_check(const std::string& s);
+    static bool other_check(const std::string& s);
+    static bool keywords_repetition(const std::vector<std::string>& keywords);
+
 
     // 无附加参数时，输出所有图书
     // 附加参数内容为空则操作失败
-    // {1} 
+    // {1}
     void show();
-    
-    // 按ISBN查询
-    // 输出图书信息或空行（无满足条件的图书）
-    void show(const string& ISBN);
-   
+
     // 输出图书信息或空行（无满足条件的图书），[Keyword] 中出现多个关键词则操作失败
     // some:name, author...
     void show(const string& some, const string& value);
@@ -182,33 +371,47 @@ public:
 // 财务日志
 struct FinanceLog {
     double amount;         // 金额（正为收入，负为支出）
-    long long index;       // 第几笔交易
+    int index;       // 第几笔交易（从1开始）
+
+    FinanceLog() : amount(0), index(0) {}
+    FinanceLog(double amt, long long idx) : amount(amt), index(idx) {}
 };
 
-// 员工日志
-struct EmployeeLog {
-    char UserID[31];       // 员工ID
-    char operation[150];    // 日志内容
-};
-
+// 操作日志
 struct OperationLog {
-    char UserID[31];
-    char operation[150];
-    long long index;    // 操作序号（第几次操作）
+    char UserID[31];       // 用户ID
+    char operation[151];    // 操作内容（150字符 + '\0'）
+    int index;       // 操作序号
+
+    OperationLog() : index(0) {
+        std::memset(UserID, 0, sizeof(UserID));
+        std::memset(operation, 0, sizeof(operation));
+    }
+
+    OperationLog(const std::string& uid, const std::string& op, int idx)
+        : index(idx) {
+        std::strncpy(UserID, uid.c_str(), 30);
+        UserID[30] = '\0';
+        std::strncpy(operation, op.c_str(), 150);
+        operation[150] = '\0';
+    }
 };
 
 class LogSystem {
 private:
-    BlockList<FinanceLog> finance_logs;    // 财务日志存储
-    BlockList<EmployeeLog> employee_logs;  // 员工日志存储
-    BlockList<OperationLog> operation_logs; // 操作日志存储
-    double total_income;
-    double total_expense;
-    long long finance_count;
-  
+    MemoryRiver<FinanceLog, 3> financeStorage;    // 财务日志存储
+    MemoryRiver<OperationLog> operationStorage; // 操作日志存储
+    AccountSystem* accountSystem;
+
+    // 统计数据
+    int finance_count;      // 财务记录总数
+    int operation_count;    // 操作记录总数
+    double total_income;          // 总收入
+    double total_expense;         // 总支出
+
 public:
-    FinanceSystem();
-    ~FinanceSystem();
+    LogSystem(AccountSystem* a);
+    ~LogSystem();
 
     // 记录交易（++finance_count）
     void recordFinance(double amount);
@@ -218,7 +421,7 @@ public:
 
     // 记录操作
     void recordOperation();
-    
+
     // count = -1 输出交易总额；count = 0 输出空行
     // Count 大于历史交易总笔数时操作失败
     // {7}
