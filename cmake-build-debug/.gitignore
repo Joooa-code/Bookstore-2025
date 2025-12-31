@@ -1,9 +1,0 @@
-.idea/
-build/
-cmake-build-debug/
-.vscode/
-.idea/
-.cache/
-*.o
-*.dat
-code
