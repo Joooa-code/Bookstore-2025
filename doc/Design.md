@@ -20,15 +20,14 @@
 **include/**  
 ├── MemoryRiver.hpp     # 文件读写类（仓库管理）  
 ├── BlockList.hpp       # 块状链表模板类  
-├── Account.hpp            # 用户账户管理  
-├── Book.hpp            # 图书管理系统  
-├── Log.hpp             # 日志记录系统   
-└── Validator.hpp       # 输入验证工具    
+├── Account.hpp         # 用户账户管理  
+├── Book.hpp            # 图书管理系统   
+└── Log.hpp             # 日志记录系统   
 **src/**   
-├── Account.cpp            # 用户账户管理  
+├── Account.cpp         # 用户账户管理  
 ├── Book.cpp            # 图书管理系统  
 ├── Log.cpp             # 日志记录系统   
-└── Validator.cpp       # 输入验证工具  
+└── main.cpp       
 ## 功能设计
 ### MemoryRiver类
 ```cpp
